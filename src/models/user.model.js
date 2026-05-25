@@ -48,11 +48,12 @@ const userSchema = new Schema(
          },
         },{timestamps:true});
 
-userSchema.pre("save", async function(next) {
-   if(!this.isModified("password")) return next();
-   this.password= await bcrypt.hash(this.password,10);
-   next();
-});
+userSchema.pre("save", async function () {
+   // Just use a standard return to exit the function early
+   if (!this.isModified("password")) return; 
+   
+   this.password = await bcrypt.hash(this.password, 10);
+})
 
 userSchema.methods.isPasswordCorrect=async function(password){
    return await bcrypt.compare(password,this.password);
@@ -70,7 +71,7 @@ userSchema.methods.generateAccessToken=function(){
       }
    )
 }
-userSchema.methods.generateRefreshAccessToken=function(){
+userSchema.methods.generateRefreshToken=function(){
    return jwt.sign(
       {
          _id: this._id,

@@ -18,7 +18,7 @@ const registerUser = asyncHandler( async (req,res)=>{
 
 
     const {fullname, email,username,password}=req.body
-    console.log("fullname",fullname);
+    // console.log("fullname",fullname);
 
     // if(fullname ===""){
     //     throw new apiError("fullname is required",400); 
@@ -29,16 +29,18 @@ const registerUser = asyncHandler( async (req,res)=>{
         throw new ApiError("All fields are required",400);
     }
 
-    const existedUser =User.findOne({
+    const existedUser = await User.findOne({
         $or:[{ username},{ email }]
     })
     if(existedUser) throw new ApiError("User already exists",409);
+    // console.log(req.files)
+
 
     const avatarLocalPath = req.files?.avatar[0]?.path;
-    const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
     
     if(!avatarLocalPath) throw new ApiError("Avatar is required",400);
-
+ 
     const avatar =await uploadOnCloudinary(avatarLocalPath)
     const CoverImage =await uploadOnCloudinary(coverImageLocalPath)
     
@@ -52,13 +54,13 @@ const registerUser = asyncHandler( async (req,res)=>{
         username: username.toLowerCase(),
         password
     })
-    const createdUser = await user.findById(user._id).select(
+    const createdUser = await User.findById(user._id).select(
         "-password -refreshToken "
     );
     if(!createdUser) throw new ApiError("Failed to create user",500);
 
     return res.status(201).json(
-        new ApiResponse(201, createdUUser,"User registered successfully")
+        new ApiResponse(201, createdUser,"User registered successfully")
     )
 
 })
