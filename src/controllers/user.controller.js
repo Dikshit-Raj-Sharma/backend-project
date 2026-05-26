@@ -17,6 +17,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
       refreshToken,
     };
   } catch (error) {
+    console.log("TOKEN ERROR: ", error);
     throw new ApiError(
         500,
       "Something went wrong while generating access and refresh tokens"
@@ -90,7 +91,8 @@ const loginUser = asyncHandler(async (req, res) => {
   // 6. send cookie
 
   const { email, username, password } = req.body;
-  if (!username || !email) {
+  console.log("email",email);
+  if (!username && !email) {
     throw new ApiError(400,"Username or email is required");
   }
 
