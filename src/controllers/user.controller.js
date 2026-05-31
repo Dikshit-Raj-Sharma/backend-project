@@ -238,8 +238,8 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
         email,
       },
     },
-    { new: true }
-  ).select("-password");
+    { returnDocument: "after" }
+  ).select("-password -refreshToken");
   return res
     .status(200)
     .json(new ApiResponse(200,user,"Account Details Updated Sucessfully"))
@@ -263,7 +263,7 @@ const updateUserAvatar = asyncHandler(async (req, res) =>{
                 avatar: avatar.url
             }
         },
-        { new: true }
+        { returnDocument: "after" }
     ).select("-password -refreshToken");
 
     if(oldAvatarUrl){
@@ -281,7 +281,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) =>{
       throw new ApiError(400,"Cover Image File missing")
     }
     const coverImage = await uploadOnCloudinary(coverImageLocalPath);
-    if(!coverImage.url) throw new ApiError(400,"Error while uploading cover Image")
+    if(!coverImage?.url) throw new ApiError(400,"Error while uploading cover Image")
 
     const oldCoverImageUrl=req.user.coverImage;
     const user = await User.findByIdAndUpdate(
@@ -291,7 +291,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) =>{
                 coverImage: coverImage.url
             }
         },
-        { new: true }
+        { returnDocument: "after" }
     ).select("-password -refreshToken");
 
     if(oldCoverImageUrl){
