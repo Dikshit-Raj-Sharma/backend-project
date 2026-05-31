@@ -141,8 +141,8 @@ const logoutUser = asyncHandler(async (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     {
-      $set: {
-        refreshToken: undefined,
+      $unset: {
+        refreshToken: 1,
       },
     },
     {
@@ -170,7 +170,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   try {
     const decodedToken = jwt.verify(
       incomingRefreshToken,
-      process.env.ACESS_TOKEN_SECRET
+      process.env.REFRESH_TOKEN_SECRET
     );
     const user = await User.findById(decodedToken?._id);
     if (!user) throw new ApiError(401, "Invalid Refresh Token");
@@ -223,7 +223,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(
-      new ApiResponse(200, currentUser, "Current user fetched successfully")
+      new ApiResponse(200, req.user, "Current user fetched successfully")
     );
 });
 
@@ -252,9 +252,9 @@ const updateUserAvatar = asyncHandler(async (req, res) =>{
       throw new ApiError(400,"Avatar File missing")
     }
     const avatar = await uploadOnCloudinary(avatarLocalPath);
-    if(!avatar.url) throw new ApiError(400,"Error while uploading avatar")
+    if(!avatar?.url) throw new ApiError(400,"Error while uploading avatar")
 
-    const oldAvatarUrl= req.user.avtar
+    const oldAvatarUrl= req.user.avatar
 
     const user = await User.findByIdAndUpdate(
         req.user?._id,
@@ -311,7 +311,7 @@ const getUserChannelProfile = asyncHandler(async(req,res )=>{
   const channel = await User.aggregate([
     {
       $match:{
-        username=username?.toLowerCase()
+        username:username?.toLowerCase()
 
       }
     },
@@ -342,7 +342,7 @@ const getUserChannelProfile = asyncHandler(async(req,res )=>{
         },
         isSubscribed:{
           $cond : {
-            if: {$in : [req.user?.id,"$subscribers.subscriber"]},
+            if: {$in : [req.user?._id,"$subscribers.subscriber"]},
             then: true,
             else: false
           }
